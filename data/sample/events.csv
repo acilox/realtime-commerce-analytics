@@ -1,0 +1,21 @@
+event_id,session_id,customer_id,event_type,product_id,page_url,referrer,user_agent,ip_address,timestamp
+evt-001,sess-001,cust-100,PAGE_VIEW,,/home,https://google.com,Mozilla/5.0 Chrome,192.168.1.10,2026-05-20 09:00:00
+evt-002,sess-001,cust-100,PRODUCT_VIEW,P-1001,/products/P-1001,,Mozilla/5.0 Chrome,192.168.1.10,2026-05-20 09:01:00
+evt-003,sess-001,cust-100,ADD_TO_CART,P-1001,/cart,,Mozilla/5.0 Chrome,192.168.1.10,2026-05-20 09:02:00
+evt-004,sess-001,cust-100,CHECKOUT_STARTED,,/checkout,,Mozilla/5.0 Chrome,192.168.1.10,2026-05-20 09:03:00
+evt-005,sess-001,cust-100,CHECKOUT_COMPLETED,,/checkout/success,,Mozilla/5.0 Chrome,192.168.1.10,2026-05-20 09:04:00
+evt-006,sess-002,cust-101,PAGE_VIEW,,/home,,Mozilla/5.0 Safari,192.168.1.11,2026-05-20 09:05:00
+evt-007,sess-002,cust-101,PRODUCT_VIEW,P-1002,/products/P-1002,,Mozilla/5.0 Safari,192.168.1.11,2026-05-20 09:06:00
+evt-008,sess-002,cust-101,PRODUCT_VIEW,P-1003,/products/P-1003,,Mozilla/5.0 Safari,192.168.1.11,2026-05-20 09:07:00
+evt-009,sess-003,,PAGE_VIEW,,/home,,python-requests/2.31,10.0.0.5,2026-05-20 09:10:00
+evt-010,sess-003,,PAGE_VIEW,,/home,,python-requests/2.31,10.0.0.5,2026-05-20 09:10:05
+evt-011,sess-003,,PAGE_VIEW,,/home,,python-requests/2.31,10.0.0.5,2026-05-20 09:10:10
+evt-012,sess-003,,PAGE_VIEW,,/home,,python-requests/2.31,10.0.0.5,2026-05-20 09:10:15
+evt-013,sess-003,,PAGE_VIEW,,/home,,python-requests/2.31,10.0.0.5,2026-05-20 09:10:20
+evt-014,sess-004,cust-102,PAGE_VIEW,,/home,,Mozilla/5.0 Firefox,192.168.1.12,2026-05-20 10:00:00
+evt-015,sess-004,cust-102,PRODUCT_VIEW,P-1004,/products/P-1004,,Mozilla/5.0 Firefox,192.168.1.12,2026-05-20 10:02:00
+evt-016,sess-004,cust-102,ADD_TO_CART,P-1004,/cart,,Mozilla/5.0 Firefox,192.168.1.12,2026-05-20 10:03:00
+evt-017,sess-005,cust-103,PAGE_VIEW,,/home,,Mozilla/5.0 Edge,192.168.1.13,2026-05-20 11:00:00
+evt-018,sess-005,cust-103,SEARCH,,/search?q=laptop,,Mozilla/5.0 Edge,192.168.1.13,2026-05-20 11:01:00
+evt-019,sess-005,cust-103,PRODUCT_VIEW,P-1005,/products/P-1005,,Mozilla/5.0 Edge,192.168.1.13,2026-05-20 11:02:00
+evt-020,sess-006,cust-104,PAGE_VIEW,,/home,,Mozilla/5.0 Chrome,192.168.1.14,2026-05-20 12:00:00
