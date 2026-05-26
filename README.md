@@ -1,16 +1,19 @@
 # realtime-commerce-analytics
 
-Lambda-architecture pipeline for e-commerce clickstream and order data. A
-Kafka consumer handles sessionisation and bot scoring with sub-second
-latency; a nightly Airflow batch recomputes CLV and the conversion funnel.
+A reference implementation of a Lambda-architecture pipeline for
+e-commerce clickstream and order data. A Kafka consumer handles
+sessionisation and bot scoring with sub-second latency; a nightly
+Airflow batch recomputes CLV and funnel rollups against the same source
+events.
 
-## Problem
+## Problem domain
 
-Marketing wanted real-time session counters for the homepage dashboard
-and the data science team wanted CLV recomputed every night, both on top
-of the same Kafka topics. Rather than maintain two divergent code paths
-we built one library with two entry points: a streaming consumer and a
-batch DAG.
+E-commerce platforms need both real-time decisions (live session
+counters, inventory state, bot rejection) and batch analytics (CLV
+modelling, cohort retention, conversion funnels) over the same event
+stream. The patterns here split a single source-of-truth event log
+between a streaming speed layer and a nightly batch layer, with
+deterministic merge semantics on the serving side.
 
 ## Topology
 
@@ -43,28 +46,28 @@ src/commerce_analytics/
 ## Sessionisation
 
 In-memory sessions keyed by `session_id`, evicted after 30 minutes of
-inactivity. A periodic flush task pushes them into Redis as `HSET`s
-under `commerce_analytics:session:<id>` with a 24h TTL so dashboards
-keep them visible after the session ends.
+inactivity. A periodic flush task pushes them into Redis as `HSET`
+records under `commerce_analytics:session:<id>` with a 24-hour TTL so
+dashboards retain them after the session ends.
 
-State currently lives on the consumer. If you ever need to scale the
-speed layer past one instance, swap the in-memory dict for a Redis hash
-keyed the same way — the rest of the code shouldn't have to change.
+State currently lives on the consumer process. For multi-instance
+deployments, swap the in-memory dict for a Redis hash keyed the same
+way — the rest of the code is unchanged.
 
 ## Bot scoring
 
-Cheap heuristics, not ML. UA-matches against a hardcoded substring list
-(catches `python-requests`, headless browsers, common scrapers), plus
-event velocity and missing-referrer signals. Good enough to deflect the
-obvious junk at the API gateway; anything subtle goes through fraud
-review downstream.
+Heuristic, not ML. User-agent matches against a hardcoded substring
+list (catches `python-requests`, headless browsers, common scrapers),
+combined with event velocity and missing-referrer signals. Suitable for
+deflecting obvious automation at the API gateway; subtler patterns
+should flow to a downstream fraud-review system.
 
 ## CLV
 
 `CLVCalculator.compute()` uses `lifetimes` (BG/NBD + Gamma-Gamma) when
-the package is installed, and falls back to a heuristic
-`(frequency / tenure_days) * 365 * avg_value` otherwise so the CI tests
-don't need the dependency.
+the package is installed, and falls back to a `(frequency / tenure_days)
+* 365 * avg_value` heuristic otherwise, so CI runs without the
+optional dependency.
 
 ## Running locally
 
@@ -83,13 +86,22 @@ make run-batch                # nightly batch logic, one-shot
 Python 3.11, confluent-kafka, polars, pandas, lifetimes, pymysql,
 psycopg2, redis, pyarrow, structlog, pydantic, Airflow 2.x.
 
-## Notes
+## Design notes
 
 - Topics are partitioned by `session_id` (clickstream) and `order_id`
-  (orders). The consumer group has matching partition assignment so
-  sessions don't fragment across workers.
+  (orders). The consumer group's partition assignment matches, so
+  sessions do not fragment across workers.
 - Offsets are committed manually after a successful handler — no
-  auto-commit. That gives us at-least-once; idempotency on the target
-  side (Redis HSET overwrites) handles duplicates.
-- Schema Registry is configured in compose but the consumer reads
-  plain JSON for now. Avro / Protobuf swap is a one-day job.
+  auto-commit. This gives at-least-once semantics; idempotency on the
+  target side (Redis HSET overwrites) absorbs duplicates.
+- Schema Registry is configured in docker-compose but the consumer
+  reads plain JSON. Migrating to Avro or Protobuf is a one-day change
+  isolated to the deserialisation layer.
+
+## About this code
+
+Open-source companion to the streaming and analytics work done by
+[acilox](https://github.com/acilox). For paid implementation,
+hardening, or extension of these patterns — including production
+schema-registry integration and HA consumer deployments — open an
+issue.
