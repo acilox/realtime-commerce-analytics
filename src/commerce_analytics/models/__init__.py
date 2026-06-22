@@ -4,13 +4,12 @@ from __future__ import annotations
 
 from datetime import datetime
 from decimal import Decimal
-from enum import Enum
-from typing import Optional
+from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class EventType(str, Enum):
+class EventType(StrEnum):
     PAGE_VIEW = "PAGE_VIEW"
     PRODUCT_VIEW = "PRODUCT_VIEW"
     ADD_TO_CART = "ADD_TO_CART"
@@ -27,13 +26,13 @@ class ClickEvent(BaseModel):
 
     event_id: str = Field(..., max_length=64)
     session_id: str = Field(..., max_length=64)
-    customer_id: Optional[str] = Field(None, max_length=64)
+    customer_id: str | None = Field(None, max_length=64)
     event_type: EventType
-    page_url: Optional[str] = Field(None, max_length=512)
-    product_id: Optional[str] = Field(None, max_length=64)
-    referrer: Optional[str] = Field(None, max_length=512)
-    user_agent: Optional[str] = Field(None, max_length=512)
-    ip_address: Optional[str] = Field(None, max_length=64)
+    page_url: str | None = Field(None, max_length=512)
+    product_id: str | None = Field(None, max_length=64)
+    referrer: str | None = Field(None, max_length=512)
+    user_agent: str | None = Field(None, max_length=512)
+    ip_address: str | None = Field(None, max_length=64)
     timestamp: datetime
 
 
@@ -62,7 +61,7 @@ class Session(BaseModel):
     """A user session — aggregated from clicks."""
 
     session_id: str
-    customer_id: Optional[str] = None
+    customer_id: str | None = None
     start_time: datetime
     last_activity: datetime
     page_views: int = 0
@@ -72,4 +71,4 @@ class Session(BaseModel):
     checkouts_completed: int = 0
     revenue: Decimal = Field(default=Decimal("0"), ge=0)
     bot_score: float = Field(default=0.0, ge=0.0, le=1.0)
-    user_agent: Optional[str] = None
+    user_agent: str | None = None

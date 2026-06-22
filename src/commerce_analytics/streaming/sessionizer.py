@@ -8,7 +8,7 @@ State management:
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
 from commerce_analytics.config import get_logger, get_settings
@@ -47,11 +47,9 @@ class Sessionizer:
 
     def expire_stale_sessions(self, now: datetime | None = None) -> list[Session]:
         """Return and remove sessions older than timeout. Useful for periodic flush."""
-        now = now or datetime.now(tz=timezone.utc)
+        now = now or datetime.now(tz=UTC)
         cutoff = now - self.timeout
-        expired = [
-            sid for sid, sess in self._sessions.items() if sess.last_activity < cutoff
-        ]
+        expired = [sid for sid, sess in self._sessions.items() if sess.last_activity < cutoff]
         flushed = [self._sessions.pop(sid) for sid in expired]
         if flushed:
             logger.info("sessions_expired", count=len(flushed))

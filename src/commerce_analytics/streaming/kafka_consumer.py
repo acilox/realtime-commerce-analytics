@@ -11,8 +11,6 @@ from __future__ import annotations
 
 import json
 import signal
-import sys
-from typing import Callable
 
 from commerce_analytics.config import get_logger, get_settings
 from commerce_analytics.models import ClickEvent, InventoryEvent, OrderEvent

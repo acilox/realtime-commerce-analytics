@@ -6,9 +6,6 @@ Falls back to a simple heuristic if `lifetimes` isn't installed.
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
-from decimal import Decimal
-
 import pandas as pd
 
 from commerce_analytics.config import get_logger
@@ -33,14 +30,18 @@ class CLVCalculator:
         # Use lifetimes BG/NBD if available, else simple frequency*value heuristic
         try:
             from lifetimes import BetaGeoFitter, GammaGammaFitter  # type: ignore[import-not-found]
-            from lifetimes.utils import summary_data_from_transaction_data  # type: ignore[import-not-found]
+            from lifetimes.utils import (
+                summary_data_from_transaction_data,  # type: ignore[import-not-found]
+            )
 
-            return self._fit_bgnbd(orders_df, BetaGeoFitter, GammaGammaFitter, summary_data_from_transaction_data)
+            return self._fit_bgnbd(
+                orders_df, BetaGeoFitter, GammaGammaFitter, summary_data_from_transaction_data
+            )
         except ImportError:
             logger.warning("lifetimes_not_installed_using_heuristic")
             return self._heuristic_clv(orders_df)
 
-    def _fit_bgnbd(self, df, BGNBD, GammaGamma, summary_fn) -> pd.DataFrame:
+    def _fit_bgnbd(self, df, bg_fitter_cls, gamma_gamma_cls, summary_fn) -> pd.DataFrame:
         df = df.copy()
         df["order_timestamp"] = pd.to_datetime(df["order_timestamp"])
         summary = summary_fn(
@@ -51,11 +52,11 @@ class CLVCalculator:
             observation_period_end=df["order_timestamp"].max(),
         )
 
-        bgf = BGNBD(penalizer_coef=0.0)
+        bgf = bg_fitter_cls(penalizer_coef=0.0)
         bgf.fit(summary["frequency"], summary["recency"], summary["T"])
 
-        ggf = GammaGamma(penalizer_coef=0.0)
-        # GammaGamma requires repeat customers (frequency >= 1)
+        ggf = gamma_gamma_cls(penalizer_coef=0.0)
+        # Gamma-Gamma requires repeat customers (frequency >= 1)
         returning = summary[summary["frequency"] > 0]
         if returning.empty:
             return self._heuristic_clv(df)

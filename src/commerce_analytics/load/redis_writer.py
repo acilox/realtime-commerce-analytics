@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from typing import Iterable
+from collections.abc import Iterable
 
 from commerce_analytics.config import get_logger, get_settings
 from commerce_analytics.models import Session

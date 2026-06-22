@@ -3,8 +3,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
-from decimal import Decimal
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pandas as pd
@@ -13,7 +12,7 @@ from rich.console import Console
 from rich.table import Table
 
 from commerce_analytics.config import configure_logging, get_logger, get_settings
-from commerce_analytics.models import ClickEvent, EventType, OrderEvent, Session
+from commerce_analytics.models import ClickEvent, EventType
 from commerce_analytics.streaming import BotDetector, Sessionizer
 from commerce_analytics.transform import CLVCalculator, FunnelAnalyzer
 
@@ -85,7 +84,8 @@ def demo() -> None:
     console.print("\n[bold]Conversion Funnel:[/]")
     for _, row in fun.iterrows():
         console.print(
-            f"  {row['stage']:<25} sessions={row['sessions']:>4}   conv={row['conversion_pct']:.1f}%"
+            f"  {row['stage']:<25} sessions={row['sessions']:>4}   "
+            f"conv={row['conversion_pct']:.1f}%"
         )
 
     # CLV (heuristic on sample orders)
@@ -119,7 +119,7 @@ def produce_sample(count: int = typer.Option(100, help="Number of events to prod
     s = get_settings()
     p = Producer({"bootstrap.servers": s.kafka_bootstrap_servers})
 
-    now = datetime.now(tz=timezone.utc).isoformat()
+    now = datetime.now(tz=UTC).isoformat()
     for i in range(count):
         payload = {
             "event_id": f"evt-{i:06d}",
